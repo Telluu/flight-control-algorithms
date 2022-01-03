@@ -1,17 +1,8 @@
+set selectedALT to 100.
+set prevSampleTime to 0.
+set prevError to 0.
+set i to 0.
 
-until false {
-    lock throttle to PIDController(100, ship:bounds:bottomaltradar, 0, 1, time:seconds, 10, 10, 100).
-}
-
-function clamp {
-    parameter value.
-    parameter min.
-    parameter max.
-    return min(max(value, min), max).
-}
-
-set lastSampleTime to 0.
-set lastInput to 0.
 function PIDController {
     parameter setPoint.
     parameter input.
@@ -22,27 +13,42 @@ function PIDController {
     parameter kI is 0.
     parameter kD is 0.
 
-    set p to 0.
-    set i to 0.
-    set d to 0.
+    set error to setPoint - input.
+    set dt to sampleTime - prevSampleTime.
 
-    set dt to sampleTime - lastSampleTime.
-    set errorValue to setPoint - input.
-    set changeRate to (input - lastInput) / dt.
+    set p to Kp * error.
+    set i to Ki * (i + error * dt).
+    set d to Kd * ((error - prevError) / dt).
 
-    set p to Kp * errorValue.
-    set i to Ki * (i + errorValue * dt).
-    set d to Kd * -changeRate.
+    set prevSampleTime to sampleTime.
+    set prevError to error.
 
     clearScreen.
-    print "P: " + p.
-    print "I: " + i.
-    print "D: " + d.
-    print "Change Rate: " + changeRate.
-    print "Error: " + errorValue.
+    print "Selected ALT: " + selectedALT.
+    print "P: " + round(p, 1).
+    print "I: " + round(i, 1).
+    print "D: " + round(d, 1).
+    print "Error: " + round(error, 1).
 
-    set lastSampleTime to sampleTime.
-    set lastInput to input.
+    return min(max(p + i + d, minOutput), maxOutput).
+}
 
-    return clamp(p + i + d, minOutput, maxOutput).
+on ag1 { set selectedALT to selectedALT - 10. return true. }
+on ag2 { set selectedALT to selectedALT + 10. return true. }
+on ag3 { set selectedALT to selectedALT - 100. return true. }
+on ag4 { set selectedALT to selectedALT + 100. return true. }
+
+until false {
+    lock throttle to PIDController(
+        selectedALT,
+        ship:altitude,
+        0,
+        1,
+        time:seconds,
+        0.025,
+        0,
+        0.25
+    ).
+
+    wait 0.
 }
