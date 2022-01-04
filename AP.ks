@@ -1,32 +1,33 @@
-set selectedALT to 100.
-set touchDownSpeed to 1.
-set softLandProfileHeight to 15.
-set selectedMenu to "main".
-set prevSampleTime to 0.
-set prevError to 0.
-set i to 0.
+@lazyGlobal off.
+
+local selectedMenu to "main".
+local selectedALT to 100.
+local touchDownSpeed to 1.
+local softLandProfileHeight to 15.
+local prevSampleTime to 0.
+local prevError to 0.
+local i to 0.
+
+function clamp {
+    parameter value, min, max.
+    return min(max(value, min), max).
+}
 
 function PIDController {
-    parameter setPoint.
-    parameter input.
-    parameter minOutput.
-    parameter maxOutput.
-    parameter sampleTime.
-    parameter kP is 1.
-    parameter kI is 0.
-    parameter kD is 0.
+    parameter setPoint, input, minOutput, maxOutput, sampleTime.
+    parameter kP is 1, kI is 0, kD is 0.
 
-    set error to setPoint - input.
-    set dt to sampleTime - prevSampleTime.
+    local error to setPoint - input.
+    local dt to sampleTime - prevSampleTime.
 
-    set p to Kp * error.
-    set i to Ki * (i + error * dt).
-    set d to Kd * ((error - prevError) / dt).
+    local p to Kp * error.
+    set i to Ki * clamp(i + error * dt, minOutput, maxOutput).
+    local d to Kd * ((error - prevError) / dt).
 
     set prevSampleTime to sampleTime.
     set prevError to error.
 
-    return min(max(p + i + d, minOutput), maxOutput).
+    return clamp(p + i + d, minOutput, maxOutput).
 }
 
 on ag1 { set selectedMenu to "hover". return true. }
@@ -74,14 +75,14 @@ until selectedMenu = "exit" {
     }
 
     until selectedMenu <> "sburn" {
-        set AGL to ship:bounds:bottomaltradar.
-        set engAccel to ship:availablethrust / ship:mass.
+        local AGL to ship:bounds:bottomaltradar.
+        local engAccel to ship:availablethrust / ship:mass.
 
-        set timeToImpact to AGL / abs(ship:verticalspeed).
-        set timeToStop to ship:airspeed / engAccel.
-        set timeToBurn to timeToImpact - timeToStop.
+        local timeToImpact to AGL / abs(ship:verticalspeed).
+        local timeToStop to ship:airspeed / engAccel.
+        local timeToBurn to timeToImpact - timeToStop.
 
-        set solution to 1 - timeToBurn.
+        local solution to 1 - timeToBurn.
 
         clearScreen.
         print "####################".
