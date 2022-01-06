@@ -19,7 +19,7 @@ until false {
         set steeringSolution to ship:velocity:surface.
     }
     else if AGL < 20 and ship:groundspeed < 5 {
-        set throttleSolution to myPID:update(ship:verticalspeed, -0.5, time:seconds).
+        set throttleSolution to myPID:update(-0.5, ship:verticalspeed).
         set steeringSolution to up:vector.
     }
     else {
@@ -35,8 +35,6 @@ until false {
     print "Time to impact: " + round(timeToImpact, 1) + "s".
     print "Time to stop: " + round(timeToStop, 1) + "s".
     print "Time to burn: " + round(timeToBurn, 1) + "s".
-    print "Delta-v needed: " + round(timeToStop * engAccel, 1) + "m/s".
-    print "Q: " + round(ship:q * constant:atmtokpa, 1) + "kPa".
 
     wait 0.
 }

@@ -10,7 +10,6 @@ function PID {
     local d to 0.
     local prevTime to 0.
     local prevError to 0.
-    local dt to 0.
 
     local struct to lexicon(
         "error", error,
@@ -21,10 +20,10 @@ function PID {
     ).
 
     function update {
-        parameter input, setPoint, sampleTime.
+        parameter setPoint, input, sampleTime is time:seconds.
 
         set error to setPoint - input.
-        set dt to sampleTime - prevTime.
+        local dt to sampleTime - prevTime.
 
         set p to kP * error.
         if prevTime < sampleTime {
